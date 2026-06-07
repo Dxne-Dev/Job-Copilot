@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy_key',
-});
+const openaiApiKey = process.env.OPENAI_API_KEY?.trim();
+
+if (!openaiApiKey) {
+  console.warn('OPENAI_API_KEY is not configured. Generation requests will fail until this variable is set.');
+}
+
+const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
 
 const JSON_SCHEMA = {
   type: "object",
@@ -91,6 +95,10 @@ CV ACTUEL DE L'UTILISATEUR :
 ${originalResumeText}
 `;
 
+    if (!openai) {
+      return NextResponse.json({ error: 'La clé OpenAI n’est pas configurée sur le serveur. Ajoutez OPENAI_API_KEY dans Vercel/Render.' }, { status: 500 });
+    }
+
     // 3. Make call to OpenAI with structured JSON schema
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -136,8 +144,9 @@ ${originalResumeText}
 
     return NextResponse.json({ success: true, data: generation });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erreur générale dans l'API generate:", error);
-    return NextResponse.json({ error: error.message || "Une erreur interne est survenue" }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Une erreur interne est survenue';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
