@@ -38,6 +38,39 @@ function extractTitle(html: string) {
   return 'Poste à optimiser';
 }
 
+function getProxyUrl(url: string) {
+  const normalized = url.replace(/^https:\/\//i, '').replace(/^http:\/\//i, '');
+  return `https://r.jina.ai/http://${normalized}`;
+}
+
+async function fetchWithFallback(url: string) {
+  const directResponse = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; JobCopilotBot/1.0)',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    },
+    redirect: 'follow',
+  });
+
+  if (directResponse.ok) {
+    return { response: directResponse, source: 'direct' as const };
+  }
+
+  const proxyUrl = getProxyUrl(url);
+  const proxyResponse = await fetch(proxyUrl, {
+    headers: {
+      Accept: 'text/plain,text/html,*/*',
+      'User-Agent': 'Mozilla/5.0',
+    },
+  });
+
+  if (!proxyResponse.ok) {
+    return { response: null, source: 'fallback' as const };
+  }
+
+  return { response: proxyResponse, source: 'proxy' as const };
+}
+
 export async function POST(request: Request) {
   try {
     const { offerTextOrUrl } = await request.json();
@@ -64,16 +97,15 @@ export async function POST(request: Request) {
       });
     }
 
-    const response = await fetch(rawInput, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; JobCopilotBot/1.0)',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      redirect: 'follow',
-    });
+    const { response, source } = await fetchWithFallback(rawInput);
 
-    if (!response.ok) {
-      throw new Error(`Impossible de récupérer l’offre depuis l’URL (${response.status}).`);
+    if (!response) {
+      const fallbackTitle = rawInput.replace(/^https?:\/\//i, '').split('/')[0] || 'Poste à optimiser';
+      return NextResponse.json({
+        jobTitle: fallbackTitle,
+        jobDescription: `Annonce à partir de l’URL : ${rawInput}`,
+        source: 'url-fallback',
+      });
     }
 
     const contentType = response.headers.get('content-type') || '';
@@ -93,7 +125,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       jobTitle: title,
       jobDescription: cleanText.slice(0, 8000),
-      source: 'url-html',
+      source: source === 'proxy' ? 'url-html-proxy' : 'url-html',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur lors de l’analyse de l’offre.';
