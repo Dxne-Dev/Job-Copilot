@@ -24,6 +24,12 @@ export default function Login() {
     setErrorMsg('');
     setSuccessMsg('');
 
+    if (!supabase) {
+      setErrorMsg('Configuration Supabase introuvable. Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY dans votre environnement.');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
@@ -46,26 +52,27 @@ export default function Login() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Une erreur est survenue lors de l'authentification.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Une erreur est survenue lors de l'authentification.";
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 text-slate-100 px-6 py-12 relative overflow-hidden">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_#0f172a_0%,_#07111f_25%,_#020617_100%)] text-slate-100 px-6 py-12 relative overflow-hidden">
       {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md space-y-8 z-10">
         {/* Brand logo */}
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="flex items-center gap-2 mb-4">
-            <div className="h-10 w-10 bg-gradient-to-tr from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <div className="h-10 w-10 bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
-            <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
+            <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-cyan-100 to-emerald-300 bg-clip-text text-transparent">
               JobCopilot
             </span>
           </Link>
@@ -80,7 +87,7 @@ export default function Login() {
         </div>
 
         {/* Card Form */}
-        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-8 shadow-xl backdrop-blur-md">
+        <div className="bg-slate-900/50 border border-white/10 rounded-2xl p-8 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl">
           {errorMsg && (
             <div className="mb-6 flex items-start gap-2 bg-red-500/10 border border-red-500/20 text-red-200 text-xs rounded-xl p-3">
               <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
@@ -108,7 +115,7 @@ export default function Login() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Jean Dupont"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-3 px-4 text-sm outline-none transition-all placeholder:text-slate-600"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-xl py-3 px-4 text-sm outline-none transition-all placeholder:text-slate-600"
                   />
                 </div>
               </div>
@@ -128,7 +135,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jean.dupont@example.com"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-3 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-xl py-3 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -147,7 +154,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-3 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-xl py-3 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -155,7 +162,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-semibold py-3 rounded-xl transition-all shadow-md shadow-cyan-500/20 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -175,7 +182,7 @@ export default function Login() {
                 Déjà inscrit ?{' '}
                 <button
                   onClick={() => setIsSignUp(false)}
-                  className="text-indigo-400 font-bold hover:underline"
+                  className="text-cyan-200 font-bold hover:underline"
                 >
                   Connectez-vous
                 </button>
@@ -185,7 +192,7 @@ export default function Login() {
                 Nouveau sur JobCopilot ?{' '}
                 <button
                   onClick={() => setIsSignUp(true)}
-                  className="text-indigo-400 font-bold hover:underline"
+                  className="text-cyan-200 font-bold hover:underline"
                 >
                   Créez un compte gratuitement
                 </button>
