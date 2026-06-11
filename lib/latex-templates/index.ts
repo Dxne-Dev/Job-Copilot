@@ -46,9 +46,9 @@ export function generateProfessionalTemplate(data: OptimizedResumeResponse, cont
     return `
 \\textbf{${role}} \\hfill \\textit{${duration}} \\\\
 \\textit{${company}} \\\\
-\\begin{itemize}[leftmargin=15pt, topsep=2pt, itemsep=2pt]
+${achievements ? `\\begin{itemize}[leftmargin=15pt, topsep=2pt, itemsep=2pt]
 ${achievements}
-\\end{itemize}
+\\end{itemize}` : ''}
 \\vspace{5pt}`;
   }).join('\n');
 
@@ -115,9 +115,9 @@ export function generateModernTemplate(data: OptimizedResumeResponse, contact: U
 
     return `
 \\noindent\\textbf{${role}} --- \\textit{${company}} \\hfill \\textbf{${duration}} \\\\
-\\begin{itemize}[leftmargin=12pt, noitemsep, topsep=3pt]
+${achievements ? `\\begin{itemize}[leftmargin=12pt, noitemsep, topsep=3pt]
 ${achievements}
-\\end{itemize}
+\\end{itemize}` : ''}
 \\vspace{6pt}`;
   }).join('\n');
 
@@ -192,9 +192,9 @@ export function generateExecutiveTemplate(data: OptimizedResumeResponse, contact
     return `
 \\noindent\\textbf{\\fontsize{11}{13}\\selectfont ${role}} \\hfill \\textbf{\\textcolor{accent}{${duration}}} \\\\
 \\noindent\\textit{\\textcolor{gray}{${company}}} \\\\
-\\begin{itemize}[leftmargin=15pt, topsep=3pt, itemsep=2.5pt]
+${achievements ? `\\begin{itemize}[leftmargin=15pt, topsep=3pt, itemsep=2.5pt]
 ${achievements}
-\\end{itemize}
+\\end{itemize}` : ''}
 \\vspace{6pt}`;
   }).join('\n');
 
@@ -265,9 +265,9 @@ export function generateMinimalTemplate(data: OptimizedResumeResponse, contact: 
     return `
 \\noindent\\textbf{${role}} \\hfill \\textit{${duration}} \\\\
 \\noindent\\textcolor{gray}{${company}} \\\\
-\\begin{itemize}[leftmargin=12pt, topsep=2pt, itemsep=1.5pt]
+${achievements ? `\\begin{itemize}[leftmargin=12pt, topsep=2pt, itemsep=1.5pt]
 ${achievements}
-\\end{itemize}
+\\end{itemize}` : ''}
 \\vspace{4pt}`;
   }).join('\n');
 
