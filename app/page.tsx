@@ -71,7 +71,7 @@ export default function Home() {
                   <div className="mt-3 space-y-3 text-sm text-slate-100">
                     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">Mots-clés ATS intégrés • leadership • product • roadmap</div>
                     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">Lettre de motivation 300–400 mots • ton professionnel</div>
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">Export LaTeX PDF prêt à envoyer</div>
+                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">Export PDF Professionnel prêt à envoyer</div>
                   </div>
                 </article>
               </div>
@@ -83,7 +83,7 @@ export default function Home() {
           {[
             ['1 min', 'de setup pour obtenir un résultat exploitable'],
             ['94%', 'score ATS estimé sur les profils optimisés'],
-            ['3 formats', 'CV, lettre, export LaTeX/PDF'],
+            ['3 formats', 'CV, lettre, export PDF Haute Qualité'],
           ].map(([value, label]) => (
             <article key={value} className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-slate-950/20 backdrop-blur-xl">
               <p className="text-3xl font-black text-white">{value}</p>
@@ -100,7 +100,7 @@ export default function Home() {
           <div className="grid gap-6 md:grid-cols-3">
             {[
               { icon: Cpu, title: 'Analyse IA ultra ciblée', text: 'Mots-clés ATS, ton d’écriture, impact business et structure rationalisée.' },
-              { icon: Layers, title: 'Templates LaTeX premium', text: 'Sorties nettes, lisibles et adaptées aux systèmes de recrutement modernes.' },
+              { icon: Layers, title: 'Modèles de CV premium', text: 'Sorties nettes, lisibles et adaptées aux systèmes de recrutement modernes.' },
               { icon: FileText, title: 'Lettre + profil prêt à poster', text: 'Une seule expérience pour générer votre CV, votre lettre et votre export final.' },
             ].map((item) => (
               <article key={item.title} className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-slate-950/20 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/8">
@@ -130,7 +130,7 @@ export default function Home() {
               <p className="mt-3 text-sm text-indigo-100">Plan Premium</p>
               <p className="mt-3 text-4xl font-black text-white">19€<span className="text-base font-medium text-slate-300">/mois</span></p>
               <p className="mt-2 text-sm text-slate-300">Tout le nécessaire pour produire un CV premium et le partager rapidement.</p>
-              <ul className="mt-6 space-y-3 text-sm text-slate-100">{['Templates LaTeX complets', 'PDF premium 1 clic', 'Historique illimité', 'Export .tex'].map((item) => <li key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-300" /> {item}</li>)}</ul>
+              <ul className="mt-6 space-y-3 text-sm text-slate-100">{['Modèles de CV professionnels', 'PDF premium 1 clic', 'Historique illimité', 'Format d\'édition (.tex)'].map((item) => <li key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-300" /> {item}</li>)}</ul>
               <Link href="/dashboard" className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-emerald-400 px-4 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:from-cyan-300 hover:to-emerald-300">Obtenir le Premium</Link>
             </article>
           </div>
@@ -140,7 +140,7 @@ export default function Home() {
       <footer className="border-t border-white/5 bg-slate-950/80 py-8 text-center text-sm text-slate-400">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-6 md:flex-row">
           <div className="flex items-center gap-2 font-semibold text-slate-200"><Sparkles className="h-4 w-4 text-cyan-100" /> JobCopilot</div>
-          <p>© {new Date().getFullYear()} JobCopilot — CV IA, lettre et exports LaTeX premium.</p>
+          <p>© {new Date().getFullYear()} JobCopilot — CV IA, lettre et exports PDF premium.</p>
         </div>
       </footer>
     </div>

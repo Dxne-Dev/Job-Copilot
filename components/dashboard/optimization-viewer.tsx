@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { OptimizedResumeResponse } from '@/types';
 import { Clipboard, Check, Download, Sparkles, FileText, Lock, ShieldAlert, Cpu } from 'lucide-react';
+import TemplateGallery from './template-gallery';
 
 interface OptimizationViewerProps {
   data: OptimizedResumeResponse;
@@ -20,8 +21,8 @@ export default function OptimizationViewer({
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'experiences' | 'skills' | 'letter' | 'analysis'>('profile');
 
-  // LaTeX Compile settings
-  const [templateId, setTemplateId] = useState<'professional' | 'modern'>('professional');
+  // Template states
+  const [templateId, setTemplateId] = useState<string>('professional');
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -140,6 +141,15 @@ ${data.coverLetter}
             <Download className="h-4 w-4" /> Télécharger .TXT
           </button>
         </div>
+      </div>
+
+      {/* Template Gallery Section */}
+      <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 backdrop-blur-md">
+        <TemplateGallery
+          selectedTemplate={templateId}
+          onSelectTemplate={setTemplateId}
+          isPremium={isPremium}
+        />
       </div>
 
       {/* Main Grid */}
@@ -307,15 +317,15 @@ ${data.coverLetter}
           </div>
         </div>
 
-        {/* LaTeX Generation panel */}
+        {/* Export & Generation panel */}
         <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
           
           {!isPremium && (
             <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-center p-6 z-20">
               <Lock className="h-8 w-8 text-indigo-400 mb-3" />
-              <h4 className="text-base font-bold text-white mb-2">Option Premium LaTeX</h4>
+              <h4 className="text-base font-bold text-white mb-2">Export Premium PDF</h4>
               <p className="text-xs text-slate-400 max-w-xs mb-6">
-                Injectez automatiquement ce profil dans des templates de CV LaTeX parfaits pour passer les filtres ATS. Téléchargez en 1 clic au format PDF.
+                Générez instantanément votre CV dans le modèle sélectionné. Exportations illimitées en PDF de haute qualité.
               </p>
               <button
                 onClick={onUpgrade}
@@ -328,7 +338,7 @@ ${data.coverLetter}
           )}
 
           <h3 className="text-sm font-bold text-slate-350 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-            <Sparkles className="h-4.5 w-4.5 text-indigo-400" /> Export LaTeX PDF
+            <Sparkles className="h-4.5 w-4.5 text-indigo-400" /> Export PDF Professionnel
           </h3>
 
           <div className="space-y-4">
@@ -339,37 +349,8 @@ ${data.coverLetter}
               </div>
             )}
 
-            {/* Template select */}
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Modèle de CV</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTemplateId('professional')}
-                  className={`text-xs py-2 rounded-lg font-semibold border transition-all ${
-                    templateId === 'professional'
-                      ? 'border-indigo-500 bg-indigo-500/5 text-white'
-                      : 'border-slate-800 bg-slate-950/50 text-slate-500'
-                  }`}
-                >
-                  Classic ATS
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTemplateId('modern')}
-                  className={`text-xs py-2 rounded-lg font-semibold border transition-all ${
-                    templateId === 'modern'
-                      ? 'border-indigo-500 bg-indigo-500/5 text-white'
-                      : 'border-slate-800 bg-slate-950/50 text-slate-500'
-                  }`}
-                >
-                  Modern Blue
-                </button>
-              </div>
-            </div>
-
             {/* Contact inputs */}
-            <div className="space-y-3 border-t border-slate-900 pt-4">
+            <div className="space-y-3">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Coordonnées du CV</span>
               
               <div>
@@ -425,7 +406,7 @@ ${data.coverLetter}
                 disabled={exportLoading}
                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
               >
-                {exportLoading ? 'Compilation...' : 'Générer & Télécharger le PDF'}
+                {exportLoading ? 'Génération...' : 'Télécharger le CV en PDF'}
               </button>
               <button
                 type="button"
@@ -433,7 +414,7 @@ ${data.coverLetter}
                 disabled={exportLoading}
                 className="w-full border border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-400 font-semibold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1"
               >
-                Télécharger le code LaTeX (.tex)
+                Télécharger le format éditable (.tex)
               </button>
             </div>
           </div>

@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
 
-const openaiApiKey = process.env.OPENAI_API_KEY?.trim();
+const openrouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
+const openrouterBaseUrl = 'https://openrouter.ai/api/v1';
 
-if (!openaiApiKey) {
-  console.warn('OPENAI_API_KEY is not configured. Generation requests will fail until this variable is set.');
+if (!openrouterApiKey) {
+  console.warn('OPENROUTER_API_KEY is not configured. Generation requests will fail until this variable is set.');
 }
 
-const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
+const openai = openrouterApiKey ? new OpenAI({
+  apiKey: openrouterApiKey,
+  baseURL: openrouterBaseUrl,
+}) : null;
 
 const JSON_SCHEMA = {
   type: "object",
@@ -80,11 +84,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 });
     }
 
-    // 2. Setup prompts for OpenAI
+    // 2. Setup prompts with embedded JSON schema
     const systemPrompt = `Tu es un expert en recrutement et optimisation de CV pour les ATS (Applicant Tracking Systems). 
 Analyse le CV de l'utilisateur et l'offre d'emploi fournie. 
 Génère une version optimisée du CV et une lettre de motivation ciblée (300-400 mots).
-Ne mens jamais et n'invente pas de fausses expériences professionnelles, mais adapte le vocabulaire, la formulation des réalisations et mets en valeur les compétences clés qui matchent avec l'offre.`;
+Ne mens jamais et n'invente pas de fausses expériences professionnelles, mais adapte le vocabulaire, la formulation des réalisations et mets en valeur les compétences clés qui matchent avec l'offre.
+
+Tu DOIS répondre UNIQUEMENT avec un objet JSON valide, sans texte avant ni après, respectant exactement ce schéma :
+${JSON.stringify(JSON_SCHEMA, null, 2)}`;
 
     const userPrompt = `
 OFFRE D'EMPLOI :
@@ -93,27 +100,22 @@ Description : ${jobDescription}
 
 CV ACTUEL DE L'UTILISATEUR :
 ${originalResumeText}
+
+Réponds UNIQUEMENT avec le JSON demandé, sans aucun texte supplémentaire.
 `;
 
     if (!openai) {
-      return NextResponse.json({ error: 'La clé OpenAI n’est pas configurée sur le serveur. Ajoutez OPENAI_API_KEY dans Vercel/Render.' }, { status: 500 });
+      return NextResponse.json({ error: 'La clé OpenRouter n\'est pas configurée sur le serveur. Ajoutez OPENROUTER_API_KEY dans Vercel.' }, { status: 500 });
     }
 
-    // 3. Make call to OpenAI with structured JSON schema
+    // 3. Make call to LLM via OpenRouter
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'openai/gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'optimized_resume_response',
-          schema: JSON_SCHEMA,
-          strict: true
-        }
-      },
+      response_format: { type: 'json_object' },
       temperature: 0.3
     });
 

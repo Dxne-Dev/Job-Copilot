@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateProfessionalTemplate, generateModernTemplate } from '@/lib/latex-templates';
+import { generateProfessionalTemplate, generateModernTemplate, generateExecutiveTemplate, generateMinimalTemplate } from '@/lib/latex-templates';
 
 export async function POST(request: Request) {
   try {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!isPremium && !bypassCheck) {
       return NextResponse.json({ 
         error: 'Premium requis', 
-        message: "L'accès aux templates LaTeX et au téléchargement PDF stylisé est réservé aux abonnés Premium à 19€/mois." 
+        message: "L'accès aux templates de CV et au téléchargement PDF stylisé est réservé aux abonnés Premium à 19€/mois." 
       }, { status: 403 });
     }
 
@@ -43,6 +43,10 @@ export async function POST(request: Request) {
     let texContent = '';
     if (templateId === 'modern') {
       texContent = generateModernTemplate(optimizedData, contact);
+    } else if (templateId === 'executive') {
+      texContent = generateExecutiveTemplate(optimizedData, contact);
+    } else if (templateId === 'minimal') {
+      texContent = generateMinimalTemplate(optimizedData, contact);
     } else {
       texContent = generateProfessionalTemplate(optimizedData, contact);
     }
@@ -83,10 +87,10 @@ export async function POST(request: Request) {
         },
       });
     } catch (compileError: any) {
-      console.error("Erreur de compilation LaTeX externe:", compileError);
+      console.error("Erreur de compilation externe:", compileError);
       return NextResponse.json({
         error: 'Erreur de compilation PDF',
-        message: 'Le compilateur LaTeX en ligne a rencontré un problème. Vous pouvez télécharger le fichier source .tex pour le compiler sur Overleaf.',
+        message: 'Le moteur de génération en ligne a rencontré un problème. Vous pouvez télécharger le fichier source éditable (.tex) pour le compiler sur un éditeur compatible.',
         texSource: texContent
       }, { status: 502 });
     }

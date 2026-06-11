@@ -85,7 +85,7 @@ export default function Dashboard() {
     const query = new URLSearchParams(window.location.search);
     if (query.get('payment_success')) {
       const timer = window.setTimeout(() => {
-        setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez des templates LaTeX.");
+        setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez de tous nos modèles de CV.");
       }, 0);
       router.replace('/dashboard');
       return () => window.clearTimeout(timer);
@@ -292,7 +292,7 @@ export default function Dashboard() {
                     <Sparkles className="h-4.5 w-4.5 text-cyan-300 animate-pulse" /> Obtenir l&apos;accès Premium
                   </h4>
                   <p className="text-xs text-slate-450 mt-1.5 leading-relaxed">
-                    Compilez instantanément vos CVs optimisés avec notre bibliothèque LaTeX professionnelle pour franchir les ATS.
+                    Générez instantanément vos CVs optimisés avec nos modèles professionnels pour franchir les filtres ATS.
                   </p>
                 </div>
                 <button
