@@ -63,18 +63,32 @@ export async function POST(request: Request) {
 
     // 5. Compile to PDF using public LaTeX compiler API
     try {
-      const compileResponse = await fetch('https://latex.ytotech.com/api/compile', {
+      const compileResponse = await fetch('https://latex.ytotech.com/builds/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: texContent,
           compiler: 'pdflatex',
+          resources: [
+            {
+              main: true,
+              content: texContent,
+            },
+          ],
         }),
       });
 
       if (!compileResponse.ok) {
+        // Try to parse error response for more details
+        let errorDetails = '';
+        try {
+          const errorJson = await compileResponse.json();
+          errorDetails = JSON.stringify(errorJson);
+        } catch {
+          errorDetails = await compileResponse.text();
+        }
+        console.error("LaTeX compilation error details:", errorDetails);
         throw new Error(`Le service de compilation LaTeX a répondu avec le statut ${compileResponse.status}`);
       }
 
