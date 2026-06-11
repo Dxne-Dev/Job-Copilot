@@ -132,7 +132,7 @@ ${data.coverLetter}
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-center px-4 py-3 bg-slate-950/80 border border-slate-850 rounded-xl">
             <span className="text-[10px] text-slate-500 block uppercase tracking-wider">Score ATS estimé</span>
-            <span className="text-2xl font-black text-green-400">{data.analysis.atsScore}%</span>
+            <span className="text-2xl font-black text-green-400">{data.analysis?.atsScore || 0}%</span>
           </div>
           <button
             onClick={handleDownloadTxt}
@@ -297,7 +297,7 @@ ${data.coverLetter}
                   <div className="p-4 bg-green-500/5 border border-green-500/10 rounded-xl space-y-2">
                     <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider block">Forces du profil</span>
                     <ul className="list-disc pl-4 space-y-1 text-xs text-slate-400">
-                      {data.analysis.strengths.map((str, index) => (
+                      {(data.analysis?.strengths || []).map((str, index) => (
                         <li key={index}>{str}</li>
                       ))}
                     </ul>
@@ -305,7 +305,7 @@ ${data.coverLetter}
                   <div className="p-4 bg-yellow-500/5 border border-yellow-500/10 rounded-xl space-y-2">
                     <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">Points à valoriser ou améliorer</span>
                     <ul className="list-disc pl-4 space-y-1 text-xs text-slate-400">
-                      {data.analysis.weaknesses.map((weak, index) => (
+                      {(data.analysis?.weaknesses || []).map((weak, index) => (
                         <li key={index}>{weak}</li>
                       ))}
                     </ul>
