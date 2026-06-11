@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { stripe } from '@/lib/stripe';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
   try {
@@ -12,37 +12,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const priceId = process.env.STRIPE_PRICE_ID;
-    if (!priceId) {
-      return NextResponse.json({ error: 'Identifiant de prix Stripe non configuré' }, { status: 500 });
-    }
-
     const { origin } = new URL(request.url);
 
-    // 2. Create Stripe Checkout Session for Subscription
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}&payment_success=true`,
-      cancel_url: `${origin}/dashboard?payment_cancelled=true`,
-      client_reference_id: user.id,
-      customer_email: user.email,
-      subscription_data: {
-        metadata: {
-          user_id: user.id,
-        },
-      },
-    });
+    // TEMPORARY BYPASS: Directly unlock premium status without Stripe checkout
+    const { error: insertError } = await supabaseAdmin
+      .from('subscriptions')
+      .upsert({
+        id: `sub_mock_${Date.now()}`,
+        user_id: user.id,
+        status: 'active',
+        price_id: 'mock_price_id',
+        cancel_at_period_end: false,
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
 
-    return NextResponse.json({ url: session.url });
+    if (insertError) {
+      console.error("Erreur d'insertion abonnement mock:", insertError);
+      return NextResponse.json({ error: 'Impossible de déverrouiller le compte.' }, { status: 500 });
+    }
+
+    return NextResponse.json({ url: `${origin}/dashboard?payment_success=true` });
+
   } catch (error: any) {
-    console.error("Erreur Checkout Stripe:", error);
-    return NextResponse.json({ error: 'Impossible de créer la session de paiement' }, { status: 500 });
+    console.error("Erreur Mock Checkout:", error);
+    return NextResponse.json({ error: 'Impossible de déverrouiller le compte.' }, { status: 500 });
   }
 }
