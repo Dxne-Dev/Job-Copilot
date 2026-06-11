@@ -39,24 +39,24 @@ export default function OptimizationViewer({
 
   // Basic Txt download for free tier
   const handleDownloadTxt = () => {
-    const experiencesText = data.experiences.map(exp => 
-      `${exp.role} - ${exp.company} (${exp.duration})\n` + 
-      exp.achievements.map(ach => `* ${ach}`).join('\n')
+    const experiencesText = (data.experiences || []).map(exp => 
+      `${exp.role || ''} - ${exp.company || ''} (${exp.duration || ''})\n` + 
+      (exp.achievements || []).map(ach => `* ${ach}`).join('\n')
     ).join('\n\n');
 
     const content = `=== PROFIL ===
-${data.profile.headline}
-${data.profile.summary}
+${data.profile?.headline || ''}
+${data.profile?.summary || ''}
 
 === EXPERIENCES OPTIMISEES ===
 ${experiencesText}
 
 === COMPETENCES ATS ===
-Techniques: ${data.skills.technical.join(', ')}
-Soft Skills: ${data.skills.soft.join(', ')}
+Techniques: ${(data.skills?.technical || []).join(', ')}
+Soft Skills: ${(data.skills?.soft || []).join(', ')}
 
 === LETTRE DE MOTIVATION ===
-${data.coverLetter}
+${data.coverLetter || ''}
 `;
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -187,15 +187,15 @@ ${data.coverLetter}
                 <div className="flex justify-between items-start">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Titre & Résumé optimisés</h4>
                   <button
-                    onClick={() => triggerCopy(`${data.profile.headline}\n\n${data.profile.summary}`, 'profile')}
+                    onClick={() => triggerCopy(`${data.profile?.headline || ''}\n\n${data.profile?.summary || ''}`, 'profile')}
                     className="text-slate-500 hover:text-slate-300 transition-colors"
                   >
                     {copiedText === 'profile' ? <Check className="h-4.5 w-4.5 text-green-400" /> : <Clipboard className="h-4.5 w-4.5" />}
                   </button>
                 </div>
                 <div className="p-4 bg-slate-950 border border-slate-850 rounded-xl space-y-3">
-                  <div className="font-bold text-slate-200 border-b border-slate-900 pb-2">{data.profile.headline}</div>
-                  <p className="text-sm text-slate-400 leading-relaxed font-sans">{data.profile.summary}</p>
+                  <div className="font-bold text-slate-200 border-b border-slate-900 pb-2">{data.profile?.headline || 'Profil'}</div>
+                  <p className="text-sm text-slate-400 leading-relaxed font-sans">{data.profile?.summary || 'Aucun résumé disponible.'}</p>
                 </div>
               </div>
             )}
@@ -207,7 +207,7 @@ ${data.coverLetter}
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Parcours Professionnel Adapté</h4>
                   <button
                     onClick={() => {
-                      const expStr = data.experiences.map(e => `${e.role} @ ${e.company}\n` + e.achievements.map(a => `- ${a}`).join('\n')).join('\n\n');
+                      const expStr = (data.experiences || []).map(e => `${e.role || ''} @ ${e.company || ''}\n` + (e.achievements || []).map(a => `- ${a}`).join('\n')).join('\n\n');
                       triggerCopy(expStr, 'experiences');
                     }}
                     className="text-slate-500 hover:text-slate-300 transition-colors"
@@ -216,7 +216,7 @@ ${data.coverLetter}
                   </button>
                 </div>
                 <div className="space-y-4">
-                  {data.experiences.map((exp, index) => (
+                  {(data.experiences || []).map((exp, index) => (
                     <div key={index} className="p-4 bg-slate-950 border border-slate-850 rounded-xl space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-bold text-slate-200">{exp.role}</span>
@@ -224,7 +224,7 @@ ${data.coverLetter}
                       </div>
                       <div className="text-xs text-indigo-400 font-semibold mb-2">{exp.company}</div>
                       <ul className="list-disc pl-4 space-y-1 text-xs text-slate-450 leading-relaxed">
-                        {exp.achievements.map((ach, aIdx) => (
+                        {(exp.achievements || []).map((ach, aIdx) => (
                           <li key={aIdx}>{ach}</li>
                         ))}
                       </ul>
@@ -240,7 +240,7 @@ ${data.coverLetter}
                 <div className="flex justify-between items-start">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mots-clés & Compétences ATS</h4>
                   <button
-                    onClick={() => triggerCopy(`Techniques: ${data.skills.technical.join(', ')}\nSoft: ${data.skills.soft.join(', ')}`, 'skills')}
+                    onClick={() => triggerCopy(`Techniques: ${(data.skills?.technical || []).join(', ')}\nSoft: ${(data.skills?.soft || []).join(', ')}`, 'skills')}
                     className="text-slate-500 hover:text-slate-300 transition-colors"
                   >
                     {copiedText === 'skills' ? <Check className="h-4.5 w-4.5 text-green-400" /> : <Clipboard className="h-4.5 w-4.5" />}
@@ -250,7 +250,7 @@ ${data.coverLetter}
                   <div className="p-4 bg-slate-950 border border-slate-850 rounded-xl">
                     <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block mb-2">Hard Skills / Techniques</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {data.skills.technical.map((skill, index) => (
+                      {(data.skills?.technical || []).map((skill, index) => (
                         <span key={index} className="text-xs bg-indigo-500/10 text-indigo-300 border border-indigo-500/10 px-2 py-0.5 rounded-md">
                           {skill}
                         </span>
@@ -260,7 +260,7 @@ ${data.coverLetter}
                   <div className="p-4 bg-slate-950 border border-slate-850 rounded-xl">
                     <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider block mb-2">Soft Skills / Comportemental</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {data.skills.soft.map((skill, index) => (
+                      {(data.skills?.soft || []).map((skill, index) => (
                         <span key={index} className="text-xs bg-violet-500/10 text-violet-300 border border-violet-500/10 px-2 py-0.5 rounded-md">
                           {skill}
                         </span>
@@ -277,14 +277,14 @@ ${data.coverLetter}
                 <div className="flex justify-between items-start">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Lettre de Motivation (300-400 mots)</h4>
                   <button
-                    onClick={() => triggerCopy(data.coverLetter, 'letter')}
+                    onClick={() => triggerCopy(data.coverLetter || '', 'letter')}
                     className="text-slate-500 hover:text-slate-300 transition-colors"
                   >
                     {copiedText === 'letter' ? <Check className="h-4.5 w-4.5 text-green-400" /> : <Clipboard className="h-4.5 w-4.5" />}
                   </button>
                 </div>
                 <div className="p-4 bg-slate-950 border border-slate-850 rounded-xl">
-                  <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line font-sans">{data.coverLetter}</p>
+                  <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line font-sans">{data.coverLetter || 'Aucune lettre générée.'}</p>
                 </div>
               </div>
             )}
