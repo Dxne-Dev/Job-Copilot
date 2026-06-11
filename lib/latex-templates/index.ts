@@ -34,14 +34,14 @@ export function generateProfessionalTemplate(data: OptimizedResumeResponse, cont
 
   const contactLine = [phone, email, location, website].filter(Boolean).join(' | ');
 
-  const summary = escapeLatex(data.profile.summary);
-  const headline = escapeLatex(data.profile.headline);
+  const summary = escapeLatex(data.profile?.summary);
+  const headline = escapeLatex(data.profile?.headline);
 
-  const experiencesTex = data.experiences.map(exp => {
-    const role = escapeLatex(exp.role);
-    const company = escapeLatex(exp.company);
-    const duration = escapeLatex(exp.duration);
-    const achievements = exp.achievements.map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
+  const experiencesTex = (data.experiences || []).map(exp => {
+    const role = escapeLatex(exp.role || '');
+    const company = escapeLatex(exp.company || '');
+    const duration = escapeLatex(exp.duration || '');
+    const achievements = (exp.achievements || []).map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
 
     return `
 \\textbf{${role}} \\hfill \\textit{${duration}} \\\\
@@ -52,8 +52,8 @@ ${achievements}
 \\vspace{5pt}`;
   }).join('\n');
 
-  const techSkills = data.skills.technical.map(escapeLatex).join(', ');
-  const softSkills = data.skills.soft.map(escapeLatex).join(', ');
+  const techSkills = (data.skills?.technical || []).map(escapeLatex).join(', ');
+  const softSkills = (data.skills?.soft || []).map(escapeLatex).join(', ');
 
   return `\\documentclass[11pt,a4paper]{article}
 \\usepackage[utf8]{inputenc}
@@ -104,14 +104,14 @@ export function generateModernTemplate(data: OptimizedResumeResponse, contact: U
 
   const contactLine = [phone, email, location, website].filter(Boolean).join('  $\\bullet$  ');
 
-  const summary = escapeLatex(data.profile.summary);
-  const headline = escapeLatex(data.profile.headline);
+  const summary = escapeLatex(data.profile?.summary);
+  const headline = escapeLatex(data.profile?.headline);
 
-  const experiencesTex = data.experiences.map(exp => {
-    const role = escapeLatex(exp.role);
-    const company = escapeLatex(exp.company);
-    const duration = escapeLatex(exp.duration);
-    const achievements = exp.achievements.map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
+  const experiencesTex = (data.experiences || []).map(exp => {
+    const role = escapeLatex(exp.role || '');
+    const company = escapeLatex(exp.company || '');
+    const duration = escapeLatex(exp.duration || '');
+    const achievements = (exp.achievements || []).map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
 
     return `
 \\noindent\\textbf{${role}} --- \\textit{${company}} \\hfill \\textbf{${duration}} \\\\
@@ -121,8 +121,8 @@ ${achievements}
 \\vspace{6pt}`;
   }).join('\n');
 
-  const techSkills = data.skills.technical.map(escapeLatex).join(', ');
-  const softSkills = data.skills.soft.map(escapeLatex).join(', ');
+  const techSkills = (data.skills?.technical || []).map(escapeLatex).join(', ');
+  const softSkills = (data.skills?.soft || []).map(escapeLatex).join(', ');
 
   return `\\documentclass[10pt,a4paper]{article}
 \\usepackage[utf8]{inputenc}
@@ -180,14 +180,14 @@ export function generateExecutiveTemplate(data: OptimizedResumeResponse, contact
 
   const contactLine = [phone, email, location, website].filter(Boolean).join('  \\textbullet{}  ');
 
-  const summary = escapeLatex(data.profile.summary);
-  const headline = escapeLatex(data.profile.headline);
+  const summary = escapeLatex(data.profile?.summary);
+  const headline = escapeLatex(data.profile?.headline);
 
-  const experiencesTex = data.experiences.map(exp => {
-    const role = escapeLatex(exp.role);
-    const company = escapeLatex(exp.company);
-    const duration = escapeLatex(exp.duration);
-    const achievements = exp.achievements.map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
+  const experiencesTex = (data.experiences || []).map(exp => {
+    const role = escapeLatex(exp.role || '');
+    const company = escapeLatex(exp.company || '');
+    const duration = escapeLatex(exp.duration || '');
+    const achievements = (exp.achievements || []).map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
 
     return `
 \\noindent\\textbf{\\fontsize{11}{13}\\selectfont ${role}} \\hfill \\textbf{\\textcolor{accent}{${duration}}} \\\\
@@ -198,8 +198,8 @@ ${achievements}
 \\vspace{6pt}`;
   }).join('\n');
 
-  const techSkills = data.skills.technical.map(escapeLatex).join(', ');
-  const softSkills = data.skills.soft.map(escapeLatex).join(', ');
+  const techSkills = (data.skills?.technical || []).map(escapeLatex).join(', ');
+  const softSkills = (data.skills?.soft || []).map(escapeLatex).join(', ');
 
   return `\\documentclass[11pt,a4paper]{article}
 \\usepackage[utf8]{inputenc}
@@ -253,14 +253,14 @@ export function generateMinimalTemplate(data: OptimizedResumeResponse, contact: 
 
   const contactLine = [phone, email, location, website].filter(Boolean).join('   /   ');
 
-  const summary = escapeLatex(data.profile.summary);
-  const headline = escapeLatex(data.profile.headline);
+  const summary = escapeLatex(data.profile?.summary);
+  const headline = escapeLatex(data.profile?.headline);
 
-  const experiencesTex = data.experiences.map(exp => {
-    const role = escapeLatex(exp.role);
-    const company = escapeLatex(exp.company);
-    const duration = escapeLatex(exp.duration);
-    const achievements = exp.achievements.map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
+  const experiencesTex = (data.experiences || []).map(exp => {
+    const role = escapeLatex(exp.role || '');
+    const company = escapeLatex(exp.company || '');
+    const duration = escapeLatex(exp.duration || '');
+    const achievements = (exp.achievements || []).map(ach => `\\item ${escapeLatex(ach)}`).join('\n');
 
     return `
 \\noindent\\textbf{${role}} \\hfill \\textit{${duration}} \\\\
@@ -271,8 +271,8 @@ ${achievements}
 \\vspace{4pt}`;
   }).join('\n');
 
-  const techSkills = data.skills.technical.map(escapeLatex).join(', ');
-  const softSkills = data.skills.soft.map(escapeLatex).join(', ');
+  const techSkills = (data.skills?.technical || []).map(escapeLatex).join(', ');
+  const softSkills = (data.skills?.soft || []).map(escapeLatex).join(', ');
 
   return `\\documentclass[10pt,a4paper]{article}
 \\usepackage[utf8]{inputenc}
