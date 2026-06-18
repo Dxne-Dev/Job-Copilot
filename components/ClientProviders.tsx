@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import AuthVerificationHandler from './AuthVerificationHandler';
 
 export default function ClientProviders({
@@ -9,7 +10,9 @@ export default function ClientProviders({
 }) {
   return (
     <>
-      <AuthVerificationHandler />
+      <Suspense fallback={null}>
+        <AuthVerificationHandler />
+      </Suspense>
       {children}
     </>
   );

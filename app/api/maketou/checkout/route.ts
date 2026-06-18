@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         email: user.email,
         firstName: firstName,
         lastName: lastName,
-        redirectURL: `${origin}/dashboard?payment_success=true&cartId={cartId}`,
+        redirectURL: `${origin}/dashboard?cartId={cartId}`,
         meta: {
           userId: user.id,
         },

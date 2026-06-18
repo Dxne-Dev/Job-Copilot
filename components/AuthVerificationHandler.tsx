@@ -19,6 +19,8 @@ export default function AuthVerificationHandler() {
       return;
     }
 
+    let isMounted = true;
+
     const verifyCode = async () => {
       setStatus('loading');
       setMessage('Vérification en cours...');
@@ -30,22 +32,30 @@ export default function AuthVerificationHandler() {
           throw error;
         }
 
-        setStatus('success');
-        setMessage('Votre email a été vérifié avec succès ! Redirection...');
-        
-        // Clear the code from URL and redirect to dashboard
-        setTimeout(() => {
-          router.replace('/dashboard');
-          router.refresh();
-        }, 2000);
+        if (isMounted) {
+          setStatus('success');
+          setMessage('Votre email a été vérifié avec succès ! Redirection...');
+          
+          // Clear the code from URL and redirect to dashboard
+          setTimeout(() => {
+            router.replace('/dashboard');
+            router.refresh();
+          }, 2000);
+        }
       } catch (err: unknown) {
-        console.error('Verification error:', err);
-        setStatus('error');
-        setMessage(err instanceof Error ? err.message : 'Erreur lors de la vérification.');
+        if (isMounted) {
+          console.error('Verification error:', err);
+          setStatus('error');
+          setMessage(err instanceof Error ? err.message : 'Erreur lors de la vérification.');
+        }
       }
     };
 
     verifyCode();
+
+    return () => {
+      isMounted = false;
+    };
   }, [searchParams, supabase, router]);
 
   if (status === 'idle') {
@@ -53,7 +63,7 @@ export default function AuthVerificationHandler() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[100]">
+    <div key="auth-verification-modal" className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[100]">
       <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
         <div className="flex flex-col items-center text-center space-y-4">
           {status === 'loading' && <Loader2 className="h-10 w-10 text-cyan-400 animate-spin" />}

@@ -86,7 +86,7 @@ export default function Dashboard() {
     const cartId = query.get('cartId');
     
     const verifyPayment = async () => {
-      if (cartId) {
+      if (cartId && supabase) {
         try {
           const response = await fetch('/api/maketou/verify', {
             method: 'POST',
@@ -97,17 +97,24 @@ export default function Dashboard() {
           
           if (data.success) {
             setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez de tous nos modèles de CV.");
-            setIsPremium(true);
+            // Re-fetch subscription from DB to confirm
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+              const { data: subscription } = await supabase
+                .from('subscriptions')
+                .select('status')
+                .eq('user_id', authUser.id)
+                .eq('status', 'active')
+                .maybeSingle();
+              setIsPremium(!!subscription);
+            }
             router.replace('/dashboard');
-          } else if (query.get('payment_success')) {
+          } else {
             setSuccessMsg("Votre paiement est en cours de vérification, merci de patienter...");
           }
         } catch (err) {
           console.error("Payment verification failed:", err);
         }
-      } else if (query.get('payment_success')) {
-        setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez de tous nos modèles de CV.");
-        router.replace('/dashboard');
       }
     };
 
@@ -182,18 +189,18 @@ export default function Dashboard() {
     setUpgradeLoading(true);
     setErrorMsg('');
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      const response = await fetch('/api/maketou/checkout', {
         method: 'POST',
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Échec de création de la session Stripe.");
+        throw new Error(data.error || 'Échec de création de la session de paiement Maketou.');
       }
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Impossible de joindre Stripe pour le moment.';
+      const message = err instanceof Error ? err.message : 'Impossible de joindre Maketou pour le moment.';
       setErrorMsg(message);
       setUpgradeLoading(false);
     }
