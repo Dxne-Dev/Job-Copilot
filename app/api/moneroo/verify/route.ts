@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MAKETOU_API_KEY, MAKETOU_BASE_URL } from '@/lib/maketou';
+import { MONEROO_API_KEY, MONEROO_BASE_URL } from '@/lib/moneroo';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
@@ -10,31 +10,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cart ID missing' }, { status: 400 });
     }
 
-    // Get cart status from Maketou
-    const response = await fetch(`${MAKETOU_BASE_URL}/stores/cart/${cartId}`, {
+    // Get payment status from Moneroo
+    console.log('[Moneroo Verify] Checking payment status for cartId:', cartId);
+    const response = await fetch(`${MONEROO_BASE_URL}/payments/${cartId}`, {
       headers: {
-        'Authorization': `Bearer ${MAKETOU_API_KEY}`,
+        'Authorization': `Bearer ${MONEROO_API_KEY}`,
       },
     });
 
     if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to check cart' }, { status: 500 });
+      const errorText = await response.text();
+      console.error('[Moneroo Verify] Error response:', errorText);
+      return NextResponse.json({ error: 'Failed to check payment' }, { status: 500 });
     }
 
-    const cart = await response.json();
+    const paymentData = await response.json();
+    console.log('[Moneroo Verify] Payment data:', paymentData);
 
     // If payment completed, activate subscription
-    if (cart.status === 'completed') {
-      const userId = cart.meta?.userId;
+    if (paymentData.data?.status === 'success' || paymentData.status === 'success') {
+      const userId = paymentData.data?.metadata?.userId || paymentData.metadata?.userId;
       
       if (userId) {
         const { error } = await supabaseAdmin
           .from('subscriptions')
           .upsert({
-            id: `maketou_${cartId}`,
+            id: `moneroo_${cartId}`,
             user_id: userId,
             status: 'active',
-            price_id: cart.productDocumentId,
             cancel_at_period_end: false,
             current_period_start: new Date().toISOString(),
             current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -46,12 +49,12 @@ export async function POST(request: Request) {
         }
       }
 
-      return NextResponse.json({ success: true, status: cart.status });
+      return NextResponse.json({ success: true, status: paymentData.data?.status || paymentData.status });
     }
 
-    return NextResponse.json({ success: false, status: cart.status });
+    return NextResponse.json({ success: false, status: paymentData.data?.status || paymentData.status });
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error('[Moneroo Verify] Full error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -88,7 +88,7 @@ export default function Dashboard() {
     const verifyPayment = async () => {
       if (cartId && supabase) {
         try {
-          const response = await fetch('/api/maketou/verify', {
+          const response = await fetch('/api/moneroo/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cartId }),
@@ -189,18 +189,18 @@ export default function Dashboard() {
     setUpgradeLoading(true);
     setErrorMsg('');
     try {
-      const response = await fetch('/api/maketou/checkout', {
+      const response = await fetch('/api/moneroo/checkout', {
         method: 'POST',
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Échec de création de la session de paiement Maketou.');
+        throw new Error(data.error || 'Échec de création de la session de paiement Moneroo.');
       }
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Impossible de joindre Maketou pour le moment.';
+      const message = err instanceof Error ? err.message : 'Impossible de joindre Moneroo pour le moment.';
       setErrorMsg(message);
       setUpgradeLoading(false);
     }
