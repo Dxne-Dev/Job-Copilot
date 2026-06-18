@@ -83,13 +83,35 @@ export default function Dashboard() {
 
     // Check payment redirect notifications from URL params
     const query = new URLSearchParams(window.location.search);
-    if (query.get('payment_success')) {
-      const timer = window.setTimeout(() => {
+    const cartId = query.get('cartId');
+    
+    const verifyPayment = async () => {
+      if (cartId) {
+        try {
+          const response = await fetch('/api/maketou/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cartId }),
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+            setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez de tous nos modèles de CV.");
+            setIsPremium(true);
+            router.replace('/dashboard');
+          } else if (query.get('payment_success')) {
+            setSuccessMsg("Votre paiement est en cours de vérification, merci de patienter...");
+          }
+        } catch (err) {
+          console.error("Payment verification failed:", err);
+        }
+      } else if (query.get('payment_success')) {
         setSuccessMsg("Votre abonnement Premium a été activé avec succès ! Profitez de tous nos modèles de CV.");
-      }, 0);
-      router.replace('/dashboard');
-      return () => window.clearTimeout(timer);
-    }
+        router.replace('/dashboard');
+      }
+    };
+
+    verifyPayment();
   }, [router, supabase]);
 
   const handleSignOut = async () => {

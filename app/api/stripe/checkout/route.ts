@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { MAKETOU_API_KEY, MAKETOU_BASE_URL } from '@/lib/maketou';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
@@ -13,29 +14,51 @@ export async function POST(request: Request) {
     }
 
     const { origin } = new URL(request.url);
+    const productDocumentId = process.env.MAKETOU_PRODUCT_ID; // ID du produit dans Maketou
 
-    // TEMPORARY BYPASS: Directly unlock premium status without Stripe checkout
-    const { error: insertError } = await supabaseAdmin
-      .from('subscriptions')
-      .upsert({
-        id: `sub_mock_${Date.now()}`,
-        user_id: user.id,
-        status: 'active',
-        price_id: 'mock_price_id',
-        cancel_at_period_end: false,
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
-
-    if (insertError) {
-      console.error("Erreur d'insertion abonnement mock:", insertError);
-      return NextResponse.json({ error: 'Impossible de déverrouiller le compte.' }, { status: 500 });
+    if (!MAKETOU_API_KEY || !productDocumentId) {
+      console.error('Maketou API key or Product ID not configured');
+      return NextResponse.json({ error: 'Configuration du paiement incomplète' }, { status: 500 });
     }
 
-    return NextResponse.json({ url: `${origin}/dashboard?payment_success=true` });
+    const fullName = user.user_metadata?.full_name || 'Utilisateur';
+    const firstName = fullName.split(' ')[0];
+    const lastName = fullName.split(' ').slice(1).join(' ') || ' ';
+
+    // 2. Initiate Maketou Checkout
+    const checkoutResponse = await fetch(`${MAKETOU_BASE_URL}/stores/cart/checkout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${MAKETOU_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productDocumentId: productDocumentId,
+        email: user.email,
+        firstName: firstName,
+        lastName: lastName,
+        redirectURL: `${origin}/dashboard?payment_success=true&cartId={cartId}`,
+        meta: {
+          userId: user.id,
+        },
+      }),
+    });
+
+    if (!checkoutResponse.ok) {
+      const errorData = await checkoutResponse.json();
+      console.error('Maketou checkout error:', errorData);
+      throw new Error(errorData.message || 'Erreur lors de la création du paiement');
+    }
+
+    const checkoutData = await checkoutResponse.json();
+
+    // For demo/testing, we can also directly give access if needed, but wait for payment confirmation
+    // In production, use webhook or status check
+
+    return NextResponse.json({ url: checkoutData.redirectUrl });
 
   } catch (error: any) {
-    console.error("Erreur Mock Checkout:", error);
-    return NextResponse.json({ error: 'Impossible de déverrouiller le compte.' }, { status: 500 });
+    console.error("Erreur Maketou Checkout:", error);
+    return NextResponse.json({ error: error.message || 'Impossible de procéder au paiement.' }, { status: 500 });
   }
 }

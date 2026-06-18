@@ -6,6 +6,28 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { Sparkles, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 
+function getAuthErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return 'Une erreur est survenue lors de l’authentification.';
+  }
+
+  const typedError = error as { message?: string; code?: string; status?: number };
+
+  if (typedError.code === 'over_email_send_rate_limit') {
+    return 'Le nombre de mails de confirmation a été dépassé. Réessayez dans quelques minutes ou utilisez un autre email.';
+  }
+
+  if (typedError.code === 'invalid_login_credentials' || typedError.code === 'invalid_grant') {
+    return 'Email ou mot de passe invalide. Vérifiez vos identifiants et réessayez.';
+  }
+
+  if (typedError.message) {
+    return typedError.message;
+  }
+
+  return 'Une erreur est survenue lors de l’authentification.';
+}
+
 export default function Login() {
   const router = useRouter();
   const supabase = createClient();
@@ -41,19 +63,25 @@ export default function Login() {
             },
           },
         });
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase signUp error:', error);
+          throw error;
+        }
         setSuccessMsg("Inscription réussie ! Veuillez vérifier vos e-mails pour valider votre compte.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase signIn error:', error);
+          throw error;
+        }
         router.push('/dashboard');
         router.refresh();
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Une erreur est survenue lors de l'authentification.";
+      const message = getAuthErrorMessage(err);
       setErrorMsg(message);
     } finally {
       setLoading(false);
