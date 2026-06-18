@@ -22,11 +22,7 @@ export async function POST(request: Request) {
 
     const isPremium = !!subscription && !subError;
 
-    // For MVP demonstration purposes, if Stripe is not fully set up or we want to allow testing,
-    // we can check if process.env.BYPASS_PREMIUM_CHECK === 'true'.
-    const bypassCheck = process.env.BYPASS_PREMIUM_CHECK === 'true';
-
-    if (!isPremium && !bypassCheck) {
+    if (!isPremium) {
       return NextResponse.json({ 
         error: 'Premium requis', 
         message: "L'accès aux templates de CV et au téléchargement PDF stylisé est réservé aux abonnés Premium à 19€/mois." 
