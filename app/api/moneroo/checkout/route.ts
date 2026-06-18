@@ -18,17 +18,15 @@ export async function POST(request: Request) {
     console.log('[Moneroo Checkout] User authenticated:', user.email);
 
     const { origin } = new URL(request.url);
-    const productDocumentId = process.env.MONEROO_PRODUCT_ID; // ID du produit dans Moneroo
 
     console.log('[Moneroo Checkout] Env check:', {
       MONEROO_API_KEY: MONEROO_API_KEY ? 'exists' : 'missing',
-      MONEROO_PRODUCT_ID: productDocumentId ? 'exists' : 'missing',
       MONEROO_BASE_URL,
     });
 
     if (!MONEROO_API_KEY) {
-      console.error('[Moneroo Checkout] Missing config');
-      return NextResponse.json({ error: 'Configuration du paiement incomplète' }, { status: 500 });
+      console.error('[Moneroo Checkout] Missing config: MONEROO_API_KEY');
+      return NextResponse.json({ error: 'Configuration du paiement incomplète (ajoutez MONEROO_API_KEY dans les variables d\'environnement Vercel)' }, { status: 500 });
     }
 
     const fullName = user.user_metadata?.full_name || 'Utilisateur';
