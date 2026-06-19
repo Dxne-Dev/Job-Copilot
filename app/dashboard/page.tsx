@@ -25,6 +25,7 @@ export default function Dashboard() {
   // Input states
   const [resumeText, setResumeText] = useState('');
   const [jobOffer, setJobOffer] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   // UI Flow states
   const [loading, setLoading] = useState(true);
@@ -83,15 +84,15 @@ export default function Dashboard() {
 
     // Check payment redirect notifications from URL params
     const query = new URLSearchParams(window.location.search);
-    const cartId = query.get('cartId');
+    const token = query.get('token');
     
     const verifyPayment = async () => {
-      if (cartId && supabase) {
+      if (token && supabase) {
         try {
-          const response = await fetch('/api/moneroo/verify', {
+          const response = await fetch('/api/moneyfusion/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cartId }),
+            body: JSON.stringify({ token }),
           });
           const data = await response.json();
           
@@ -186,21 +187,28 @@ export default function Dashboard() {
   };
 
   const handleUpgrade = async () => {
+    if (!phoneNumber.trim()) {
+      setErrorMsg('Veuillez entrer votre numéro de téléphone.');
+      return;
+    }
+
     setUpgradeLoading(true);
     setErrorMsg('');
     try {
-      const response = await fetch('/api/moneroo/checkout', {
+      const response = await fetch('/api/moneyfusion/checkout', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Échec de création de la session de paiement Moneroo.');
+        throw new Error(data.error || 'Échec de création de la session de paiement MoneyFusion.');
       }
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Impossible de joindre Moneroo pour le moment.';
+      const message = err instanceof Error ? err.message : 'Impossible de joindre MoneyFusion pour le moment.';
       setErrorMsg(message);
       setUpgradeLoading(false);
     }
@@ -324,11 +332,21 @@ export default function Dashboard() {
                     Générez instantanément vos CVs optimisés avec nos modèles professionnels pour franchir les filtres ATS.
                   </p>
                 </div>
+                <div className="w-full">
+                  <label className="text-xs text-slate-300 mb-1 block">Numéro de téléphone</label>
+                  <input
+                    type="tel"
+                    placeholder="01010101"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 rounded-lg py-2 px-3 text-xs outline-none text-slate-200"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={handleUpgrade}
                   disabled={upgradeLoading}
-                  className="bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-cyan-500/20"
+                  className="bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-cyan-500/20 w-full"
                 >
                   {upgradeLoading ? 'Chargement...' : 'Débloquer pour 19€/mois'}
                 </button>
