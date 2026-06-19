@@ -73,14 +73,22 @@ export async function POST(request: Request) {
 
     console.log('[MoneyFusion Checkout] MoneyFusion response status:', checkoutResponse.status);
 
+    const rawResponse = await checkoutResponse.text();
+    console.log('[MoneyFusion Checkout] MoneyFusion raw response:', rawResponse);
+
     if (!checkoutResponse.ok) {
-      const errorText = await checkoutResponse.text();
-      console.error('[MoneyFusion Checkout] MoneyFusion error response:', errorText);
+      console.error('[MoneyFusion Checkout] MoneyFusion error response:', rawResponse);
       throw new Error('Échec de création de la session de paiement MoneyFusion');
     }
 
-    const checkoutData = await checkoutResponse.json();
-    console.log('[MoneyFusion Checkout] MoneyFusion success response:', checkoutData);
+    let checkoutData;
+    try {
+      checkoutData = JSON.parse(rawResponse);
+    } catch (err) {
+      console.error('[MoneyFusion Checkout] Failed to parse MoneyFusion response as JSON');
+      throw new Error('Réponse MoneyFusion invalide');
+    }
+    console.log('[MoneyFusion Checkout] MoneyFusion parsed response:', checkoutData);
 
     // Store the user in Supabase (if not already there)
     try {
