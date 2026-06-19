@@ -201,14 +201,14 @@ export default function Dashboard() {
         body: JSON.stringify({ phoneNumber }),
       });
       const data = await response.json();
-      console.log('[Dashboard] Checkout response:', data);
+      console.log('[Dashboard] Checkout FULL response:', data);
       if (!response.ok) {
         throw new Error(data.error || 'Échec de création de la session de paiement MoneyFusion.');
       }
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('URL de paiement non reçue.');
+        throw new Error('URL de paiement non reçue. Voir la console pour plus de détails.');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Impossible de joindre MoneyFusion pour le moment.';

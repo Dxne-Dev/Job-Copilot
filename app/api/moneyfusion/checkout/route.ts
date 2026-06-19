@@ -101,7 +101,12 @@ export async function POST(request: Request) {
       console.error('Error upserting user:', err);
     }
 
-    return NextResponse.json({ url: checkoutData.url, token: checkoutData.token });
+    return NextResponse.json({ 
+      rawResponse: rawResponse, 
+      parsedResponse: checkoutData, 
+      url: checkoutData.url || checkoutData.data?.url, 
+      token: checkoutData.token || checkoutData.data?.token 
+    });
   } catch (error: any) {
     console.error('[MoneyFusion Checkout] Full error:', error);
     return NextResponse.json(
