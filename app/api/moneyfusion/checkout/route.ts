@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     let checkoutData;
     try {
       checkoutData = JSON.parse(rawResponse);
-    } catch (err) {
+    } catch {
       console.error('[MoneyFusion Checkout] Failed to parse MoneyFusion response as JSON');
       throw new Error('Réponse MoneyFusion invalide');
     }

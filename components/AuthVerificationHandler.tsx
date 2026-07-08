@@ -36,7 +36,6 @@ export default function AuthVerificationHandler() {
           setStatus('success');
           setMessage('Votre email a été vérifié avec succès ! Redirection...');
           
-          // Clear the code from URL and redirect to dashboard
           setTimeout(() => {
             router.replace('/dashboard');
             router.refresh();
@@ -64,15 +63,15 @@ export default function AuthVerificationHandler() {
 
   return (
     <div key="auth-verification-modal" className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[100]">
-      <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+      <div className="card p-6 max-w-md w-full mx-4 shadow-2xl shadow-accent/10">
         <div className="flex flex-col items-center text-center space-y-4">
-          {status === 'loading' && <Loader2 className="h-10 w-10 text-cyan-400 animate-spin" />}
-          {status === 'success' && <CheckCircle2 className="h-10 w-10 text-emerald-400" />}
-          {status === 'error' && <AlertCircle className="h-10 w-10 text-red-400" />}
+          {status === 'loading' && <Loader2 className="h-10 w-10 text-accent-soft animate-spin" />}
+          {status === 'success' && <CheckCircle2 className="h-10 w-10 text-success" />}
+          {status === 'error' && <AlertCircle className="h-10 w-10 text-danger" />}
           
           <p className={`text-sm font-medium ${
-            status === 'success' ? 'text-emerald-200' : 
-            status === 'error' ? 'text-red-200' : 'text-slate-200'
+            status === 'success' ? 'text-success' : 
+            status === 'error' ? 'text-danger' : 'text-foreground'
           }`}>
             {message}
           </p>

@@ -1,17 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
-  --foreground: #eff6ff;
-  --surface: #0f172a;
-  --surface-strong: #111827;
-  --accent: #22d3ee;
-  --accent-strong: #34d399;
+  --background: #020617;
+  --foreground: #F8FAFC;
+  --surface: #0F172A;
+  --surface-alt: #1E293B;
+  --border: #1E293B;
+  --border-accent: rgba(99, 102, 241, 0.2);
+  --accent: #6366F1;
+  --accent-soft: #818CF8;
+  --accent-subtle: rgba(99, 102, 241, 0.1);
+  --success: #10B981;
+  --success-subtle: rgba(16, 185, 129, 0.1);
+  --muted: #64748B;
+  --danger: #EF4444;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-border: var(--border);
+  --color-border-accent: var(--border-accent);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-muted: var(--muted);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -22,20 +40,110 @@ html {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 26%),
-    radial-gradient(circle at right, rgba(52, 211, 153, 0.08), transparent 20%),
-    linear-gradient(135deg, #020617 0%, #07111f 45%, #111827 100%);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.28);
-  color: #eff6ff;
+  background: rgba(99, 102, 241, 0.28);
+  color: #F8FAFC;
 }
 
 * {
   box-sizing: border-box;
+}
+
+@utility glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+@utility glass-strong {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+
+@utility card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+@utility card-hover {
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(15, 23, 42, 0.8);
+  }
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--accent-soft);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 500;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--border-accent);
+    color: var(--foreground);
+    background: var(--accent-subtle);
+  }
+}
+
+@utility input-field {
+  width: 100%;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+  color: var(--foreground);
+
+  &::placeholder {
+    color: #475569;
+  }
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
 }

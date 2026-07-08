@@ -15,7 +15,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
   const [extractError, setExtractError] = useState('');
   const [extractSuccess, setExtractSuccess] = useState('');
 
-  // Dynamically load PDF.js from cdnjs
   const loadPdfJS = () => {
     return new Promise<any>((resolve, reject) => {
       if ((window as any).pdfjsLib) {
@@ -34,7 +33,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
     });
   };
 
-  // Advanced PDF text extraction with position-aware and layout-aware line reconstruction
   const extractTextFromPDF = async (file: File): Promise<string> => {
     const pdfjsLib = await loadPdfJS();
     const arrayBuffer = await file.arrayBuffer();
@@ -52,7 +50,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
       const viewport = page.getViewport({ scale: 1.0 });
       const pageHeight = viewport.height;
 
-      // Collect text items with position info
       interface TextItem {
         str: string;
         x: number;
@@ -67,7 +64,7 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
         .map((item: any) => ({
           str: item.str,
           x: item.transform[4],
-          y: pageHeight - item.transform[5], // Flip Y coordinate (PDF is bottom-up)
+          y: pageHeight - item.transform[5],
           width: item.width,
           height: item.height,
           fontName: item.fontName || '',
@@ -75,14 +72,12 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
 
       if (items.length === 0) continue;
 
-      // Sort items by Y position (top to bottom), then X (left to right)
       items.sort((a, b) => {
         const yDiff = a.y - b.y;
-        if (Math.abs(yDiff) > 3) return yDiff; // Different lines
-        return a.x - b.x; // Same line, sort left-to-right
+        if (Math.abs(yDiff) > 3) return yDiff;
+        return a.x - b.x;
       });
 
-      // Group items into rows based on Y proximity
       interface Row {
         y: number;
         height: number;
@@ -110,8 +105,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
       const maxH = Math.max(...currentRow.map(it => it.height));
       rows.push({ y: currentY, height: maxH, items: currentRow });
 
-      // Detect two-column layout
-      // Find overall content boundaries
       const allXs = items.map(it => it.x);
       const allMaxXs = items.map(it => it.x + it.width);
       const minX = Math.min(...allXs);
@@ -122,13 +115,11 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
       let dividerX = 0;
 
       if (contentWidth > 150) {
-        // Test division points from 30% to 70% of content width
         const startTestX = minX + 0.3 * contentWidth;
         const endTestX = minX + 0.7 * contentWidth;
         let bestX = 0;
         let minCrossingCount = Infinity;
 
-        // Try candidate Xs in steps of 5
         for (let testX = startTestX; testX <= endTestX; testX += 5) {
           let crossing = 0;
           let leftSide = 0;
@@ -144,7 +135,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
             }
           }
 
-          // We want a division where both sides have at least 15% of the items
           if (leftSide > 0.15 * items.length && rightSide > 0.15 * items.length) {
             if (crossing < minCrossingCount) {
               minCrossingCount = crossing;
@@ -153,7 +143,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
           }
         }
 
-        // If the crossing count is low (e.g. less than 8% of items, or <= 6), it's a two-column layout
         if (bestX > 0 && (minCrossingCount <= 6 || minCrossingCount < 0.08 * items.length)) {
           isTwoColumn = true;
           dividerX = bestX;
@@ -162,7 +151,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
 
       const pageLines: string[] = [];
 
-      // Helper to reconstruct single column lines from rows
       const reconstructSingleColumn = (blockRows: Row[]): string[] => {
         const linesList: string[] = [];
         let prevY = 0;
@@ -191,7 +179,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
       };
 
       if (isTwoColumn) {
-        // Group rows into blocks: spanning blocks or two-column blocks
         interface Block {
           type: 'spanning' | 'twocolumn';
           rows: Row[];
@@ -201,7 +188,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
         let currentBlockRows: Row[] = [];
 
         for (const row of rows) {
-          // A row is spanning if any item crosses the divider and is wide (spans >= 35% of page)
           const hasSpanningItem = row.items.some(item => 
             item.x < dividerX - 4 && item.x + item.width > dividerX + 4 && item.width > 0.35 * contentWidth
           );
@@ -223,12 +209,10 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
           blocks.push({ type: currentBlockType, rows: currentBlockRows });
         }
 
-        // For each block, reconstruct text
         for (const block of blocks) {
           if (block.type === 'spanning') {
             pageLines.push(...reconstructSingleColumn(block.rows));
           } else {
-            // Two column block! Split items into left and right sub-rows
             const leftRows: Row[] = [];
             const rightRows: Row[] = [];
 
@@ -252,7 +236,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
           }
         }
       } else {
-        // Single column layout
         pageLines.push(...reconstructSingleColumn(rows));
       }
 
@@ -261,7 +244,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
 
     const fullText = allPageTexts.join('\n\n--- Page ---\n\n');
 
-    // Final cleanup
     return fullText
       .replace(/\u00a0/g, ' ')
       .replace(/[ \t]+/g, ' ')
@@ -269,7 +251,6 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
       .trim();
   };
 
-  // Dynamically load Mammoth.js from cdnjs for docx parsing
   const loadMammoth = () => {
     return new Promise<any>((resolve, reject) => {
       if ((window as any).mammoth) {
@@ -364,19 +345,18 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
   };
 
   return (
-    <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 backdrop-blur-md">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-          <FileText className="h-4.5 w-4.5 text-indigo-400" /> 1. Votre CV Actuel
+    <div className="card p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+          <FileText className="h-4 w-4 text-accent-soft" /> 1. Votre CV Actuel
         </h3>
         
-        {/* Tabs */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800/80">
+        <div className="flex bg-background p-1 rounded-lg border border-border">
           <button
             type="button"
             onClick={() => setActiveTab('paste')}
-            className={`text-xs px-3 py-1.5 rounded-md font-semibold transition-all ${
-              activeTab === 'paste' ? 'bg-indigo-650 text-white' : 'text-slate-500 hover:text-slate-350'
+            className={`text-xs px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
+              activeTab === 'paste' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
             }`}
           >
             Copier-Coller
@@ -384,8 +364,8 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
           <button
             type="button"
             onClick={() => setActiveTab('upload')}
-            className={`text-xs px-3 py-1.5 rounded-md font-semibold transition-all ${
-              activeTab === 'upload' ? 'bg-indigo-650 text-white' : 'text-slate-500 hover:text-slate-350'
+            className={`text-xs px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
+              activeTab === 'upload' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
             }`}
           >
             Importer
@@ -400,9 +380,9 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
             onChange={(e) => setResumeText(e.target.value)}
             rows={10}
             placeholder="Copiez et collez le texte brut de votre CV actuel ici (Coordonnées, Profil, Expériences, Éducation, Compétences...)"
-            className="w-full bg-slate-950 border border-slate-850 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl p-4 text-sm outline-none transition-all placeholder:text-slate-700 resize-none font-mono"
+            className="input-field resize-none font-mono"
           />
-          <div className="flex items-center gap-1.5 text-slate-650 text-[10px] mt-2">
+          <div className="flex items-center gap-1.5 text-muted text-[10px] mt-2">
             <Clipboard className="h-3 w-3" />
             <span>Coller le texte brut est la méthode la plus rapide et la plus fiable pour l&apos;analyse IA.</span>
           </div>
@@ -418,22 +398,22 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
             onDragLeave={() => setIsDragOver(false)}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all ${
-              isDragOver ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-800 hover:border-slate-700 bg-slate-950/50'
+              isDragOver ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/30 bg-background/50'
             }`}
           >
             {isExtracting ? (
               <div className="flex flex-col items-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mb-3" />
-                <span className="text-sm font-semibold text-indigo-400">Extraction du texte en cours...</span>
-                <span className="text-xs text-slate-500 mt-1">Analyse de la structure du document</span>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-3" />
+                <span className="text-sm font-semibold text-accent-soft">Extraction du texte en cours...</span>
+                <span className="text-xs text-muted mt-1">Analyse de la structure du document</span>
               </div>
             ) : (
               <>
-                <FileText className="h-10 w-10 text-slate-600 mb-3" />
-                <span className="text-sm font-semibold text-slate-300">Glissez-déposez votre CV ici</span>
-                <span className="text-xs text-slate-500 mt-1">PDF, TXT ou DOCX acceptés</span>
+                <FileText className="h-10 w-10 text-muted mb-3" />
+                <span className="text-sm font-semibold text-foreground">Glissez-déposez votre CV ici</span>
+                <span className="text-xs text-muted mt-1">PDF, TXT ou DOCX acceptés</span>
                 
-                <label className="mt-4 bg-slate-900 hover:bg-slate-850 text-xs font-semibold py-2 px-4 rounded-lg border border-slate-800 cursor-pointer transition-all">
+                <label className="mt-4 bg-surface hover:bg-surface-alt text-xs font-semibold py-2 px-4 rounded-lg border border-border cursor-pointer transition-all">
                   Parcourir le fichier
                   <input
                     id="file-upload-input"
@@ -449,23 +429,23 @@ export default function ResumeUploader({ resumeText, setResumeText }: ResumeUplo
           </div>
 
           {extractError && (
-            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-200 text-xs rounded-xl flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+            <div className="mt-4 p-3 bg-danger/10 border border-danger/20 text-danger text-xs rounded-xl flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{extractError}</span>
             </div>
           )}
 
           {extractSuccess && !extractError && (
-            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 text-green-200 text-xs rounded-xl flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0" />
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 text-success text-xs rounded-xl flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span>{extractSuccess}</span>
             </div>
           )}
 
           {resumeText && !isExtracting && (
-            <div className="mt-4 p-3 bg-slate-950 border border-slate-850 rounded-xl">
-              <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider block mb-1">Contenu extrait avec succès</span>
-              <p className="text-xs text-slate-400 line-clamp-4 font-mono whitespace-pre-line">{resumeText}</p>
+            <div className="mt-4 p-3 bg-background border border-border rounded-xl">
+              <span className="text-[10px] font-bold text-success uppercase tracking-wider block mb-1">Contenu extrait avec succès</span>
+              <p className="text-xs text-muted line-clamp-4 font-mono whitespace-pre-line">{resumeText}</p>
             </div>
           )}
         </div>
